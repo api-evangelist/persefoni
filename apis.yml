@@ -1,0 +1,131 @@
+aid: persefoni
+name: Persefoni
+description: |
+  Persefoni is a climate management and accounting platform (CMAP) used by
+  enterprises and financial institutions to measure, report, and reduce
+  greenhouse gas emissions. The platform serves more than 9,000 sustainability
+  teams and covers Scope 1, 2, and 3 emissions, financed emissions for financial
+  services (PCAF), and disclosures aligned to SBTi, TCFD, CSRD, SEC, and SASB.
+  Persefoni also ships PersefoniAI and the Persefoni Copilot for in-product
+  carbon accounting expertise. An Integration Hub provides pre-built connectors
+  to enterprise systems (AWS, SAP Concur, Expensify, Navan, Google Sheets,
+  Coupa, NetSuite, Stripe, utilities). Persefoni does not publish a fully open,
+  self-service API portal; programmatic access is delivered through customer and
+  partner channels.
+type: Index
+position: Provider
+access: 3rd-Party
+image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
+tags:
+  - Climate
+  - Carbon Accounting
+  - CMAP
+  - ESG
+  - Financed Emissions
+  - PCAF
+  - Disclosure
+  - CSRD
+  - SBTi
+  - Sustainability
+  - Enterprise
+url: https://raw.githubusercontent.com/api-evangelist/persefoni/refs/heads/main/apis.yml
+created: '2026-05-23'
+modified: '2026-05-23'
+specificationVersion: '0.20'
+apis:
+  - aid: persefoni:integration-hub
+    name: Persefoni Integration Hub
+    description: |
+      Persefoni's Integration Hub connects the CMAP platform to enterprise
+      systems so emissions-relevant activity data flows in automatically rather
+      than via manual upload. It bundles pre-built connectors for travel, spend,
+      utilities, ERP, and cloud sources, with custom API integrations available
+      through customer onboarding and partner programs. There is no public,
+      self-service developer portal at this time.
+    humanURL: https://www.persefoni.com/product/integration-hub
+    tags:
+      - Integrations
+      - Connectors
+      - ERP
+      - Travel
+      - Utilities
+      - Cloud Emissions
+      - Enterprise API
+    properties:
+      - type: ProductPage
+        url: https://www.persefoni.com/product/integration-hub
+      - type: PlatformOverview
+        url: https://www.persefoni.com/platform
+      - type: Partners
+        url: https://www.persefoni.com/partners
+      - type: APITrackerProfile
+        url: https://apitracker.io/a/persefoni
+      - type: AWSMarketplace
+        url: https://aws.amazon.com/marketplace/pp/prodview-xjkwazkrg2b62
+      - type: Security
+        url: https://www.persefoni.com/documents/security
+    features:
+      - name: AWS Cloud Footprint
+        description: Automated collection of cloud computing footprint data from AWS cost and usage metrics.
+      - name: Travel and Expense Connectors
+        description: Pre-built integrations with SAP Concur, Expensify, and Navan for business travel data.
+      - name: Utilities Data
+        description: Connect to 9,000+ utility providers for electricity and natural gas consumption data.
+      - name: ERP and Finance Connectors
+        description: Integrations with NetSuite, Coupa, and Stripe for spend-based emissions data.
+      - name: Spreadsheet Import
+        description: Bulk import Scope 1, 2, and 3 activities from Google Sheets.
+      - name: PersefoniAI Copilot
+        description: In-product AI assistant trained on carbon accounting methodologies.
+      - name: PCAF Financed Emissions
+        description: Calculate and report financed emissions for portfolio companies and loan books.
+    useCases:
+      - name: Enterprise Carbon Measurement
+        description: Centralize Scope 1, 2, and 3 footprint calculation across the organization.
+      - name: Financial Services Emissions
+        description: Measure and disclose financed emissions for banks, asset managers, and insurers.
+      - name: Disclosure Automation
+        description: Generate reports aligned to CSRD, SEC Climate, TCFD, SBTi, and SASB.
+      - name: Supplier Engagement
+        description: Engage portfolio companies and suppliers on emissions data exchange.
+      - name: Audit-Ready Records
+        description: Maintain traceable, audit-ready emissions records.
+    integrations:
+      - name: AWS
+      - name: SAP Concur
+      - name: Expensify
+      - name: Navan
+      - name: Coupa
+      - name: NetSuite
+      - name: Stripe
+      - name: Google Sheets
+      - name: Workiva
+      - name: Patch
+      - name: Snowflake
+    authentication:
+      - type: PartnerGated
+        description: API and integration access provisioned through customer onboarding and partner programs.
+common:
+  - type: Website
+    url: https://www.persefoni.com/
+  - type: Platform
+    url: https://www.persefoni.com/platform
+  - type: ForBusiness
+    url: https://www.persefoni.com/for-business
+  - type: ForFinancialServices
+    url: https://www.persefoni.com/for-financial-services
+  - type: IntegrationHub
+    url: https://www.persefoni.com/product/integration-hub
+  - type: Partners
+    url: https://www.persefoni.com/partners
+  - type: Resources
+    url: https://www.persefoni.com/resources
+  - type: Security
+    url: https://www.persefoni.com/documents/security
+  - type: Contact
+    url: https://www.persefoni.com/contact-us
+  - type: LinkedIn
+    url: https://www.linkedin.com/company/persefoni-ai/
+maintainers:
+  - FN: Kin Lane
+    email: kin@apievangelist.com
