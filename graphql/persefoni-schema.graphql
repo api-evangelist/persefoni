@@ -1,0 +1,952 @@
+"""
+Persefoni GraphQL API Schema
+Climate management and accounting platform for enterprise carbon measurement.
+Covers activity data ingestion, emission calculations, PCAF financed emissions,
+disclosure reports, and benchmark comparisons.
+"""
+
+# ─────────────────────────────────────────
+# Scalars
+# ─────────────────────────────────────────
+
+scalar DateTime
+scalar Date
+scalar JSON
+scalar Decimal
+scalar UUID
+
+# ─────────────────────────────────────────
+# Enums
+# ─────────────────────────────────────────
+
+enum EmissionScope {
+  SCOPE_1
+  SCOPE_2
+  SCOPE_3
+}
+
+enum EmissionCategory {
+  STATIONARY_COMBUSTION
+  MOBILE_COMBUSTION
+  FUGITIVE_EMISSIONS
+  PROCESS_EMISSIONS
+  PURCHASED_ELECTRICITY
+  PURCHASED_HEAT_STEAM
+  PURCHASED_GOODS_SERVICES
+  CAPITAL_GOODS
+  FUEL_ENERGY_RELATED
+  UPSTREAM_TRANSPORTATION
+  WASTE_OPERATIONS
+  BUSINESS_TRAVEL
+  EMPLOYEE_COMMUTING
+  UPSTREAM_LEASED_ASSETS
+  DOWNSTREAM_TRANSPORTATION
+  PROCESSING_SOLD_PRODUCTS
+  USE_SOLD_PRODUCTS
+  END_OF_LIFE_SOLD_PRODUCTS
+  DOWNSTREAM_LEASED_ASSETS
+  FRANCHISES
+  INVESTMENTS
+}
+
+enum ActivityDataStatus {
+  DRAFT
+  SUBMITTED
+  VALIDATED
+  REJECTED
+  ARCHIVED
+}
+
+enum DisclosureFramework {
+  TCFD
+  CSRD
+  SEC_CLIMATE
+  SBTI
+  SASB
+  CDP
+  GRI
+  ISSB
+}
+
+enum DisclosureStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AssetClass {
+  LISTED_EQUITY
+  CORPORATE_BONDS
+  BUSINESS_LOANS
+  UNLISTED_EQUITY
+  PROJECT_FINANCE
+  COMMERCIAL_REAL_ESTATE
+  MORTGAGES
+  MOTOR_VEHICLE_LOANS
+  SOVEREIGN_DEBT
+}
+
+enum MeasurementApproach {
+  PHYSICAL_ACTIVITY
+  SPEND_BASED
+  SUPPLIER_SPECIFIC
+  HYBRID
+  AVERAGE_DATA
+}
+
+enum ReportingPeriodType {
+  CALENDAR_YEAR
+  FISCAL_YEAR
+  CUSTOM
+}
+
+enum OrganizationalBoundary {
+  OPERATIONAL_CONTROL
+  FINANCIAL_CONTROL
+  EQUITY_SHARE
+}
+
+enum EmissionFactorSource {
+  IPCC
+  EPA
+  DEFRA
+  IEA
+  GHG_PROTOCOL
+  ECOINVENT
+  CUSTOM
+}
+
+enum VerificationStatus {
+  NOT_VERIFIED
+  SELF_ASSESSED
+  LIMITED_ASSURANCE
+  REASONABLE_ASSURANCE
+}
+
+enum ConnectorStatus {
+  ACTIVE
+  INACTIVE
+  ERROR
+  PENDING
+}
+
+enum ConnectorType {
+  AWS_CLOUD_FOOTPRINT
+  SAP_CONCUR
+  EXPENSIFY
+  NAVAN
+  COUPA
+  NETSUITE
+  STRIPE
+  GOOGLE_SHEETS
+  WORKIVA
+  PATCH
+  SNOWFLAKE
+  UTILITY_PROVIDER
+  CUSTOM_API
+}
+
+enum UserRole {
+  ADMIN
+  DATA_MANAGER
+  ANALYST
+  VIEWER
+  AUDITOR
+}
+
+enum BenchmarkType {
+  INDUSTRY_AVERAGE
+  SBTI_PATHWAY
+  NET_ZERO_PATHWAY
+  PEER_GROUP
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+# ─────────────────────────────────────────
+# Core Entity Types
+# ─────────────────────────────────────────
+
+type Organization {
+  id: UUID!
+  name: String!
+  legalName: String
+  industry: String
+  sector: String
+  country: String
+  region: String
+  employeeCount: Int
+  revenue: Decimal
+  reportingCurrency: String
+  organizationalBoundary: OrganizationalBoundary!
+  fiscalYearStartMonth: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  subsidiaries: [Organization!]!
+  facilities: [Facility!]!
+  reportingPeriods: [ReportingPeriod!]!
+  users: [User!]!
+  emissionTargets: [EmissionTarget!]!
+}
+
+type Facility {
+  id: UUID!
+  organizationId: UUID!
+  organization: Organization!
+  name: String!
+  facilityType: String
+  address: Address
+  country: String!
+  region: String
+  latitude: Decimal
+  longitude: Decimal
+  operationalStatus: String
+  squareFootage: Decimal
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  activityData: [ActivityData!]!
+  emissionSummaries: [EmissionSummary!]!
+}
+
+type Address {
+  street1: String
+  street2: String
+  city: String
+  state: String
+  postalCode: String
+  country: String!
+}
+
+type User {
+  id: UUID!
+  email: String!
+  firstName: String!
+  lastName: String!
+  role: UserRole!
+  organizationId: UUID!
+  organization: Organization!
+  isActive: Boolean!
+  lastLoginAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type ReportingPeriod {
+  id: UUID!
+  organizationId: UUID!
+  organization: Organization!
+  name: String!
+  periodType: ReportingPeriodType!
+  startDate: Date!
+  endDate: Date!
+  baselineYear: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  activityData: [ActivityData!]!
+  emissionSummaries: [EmissionSummary!]!
+  disclosureReports: [DisclosureReport!]!
+}
+
+# ─────────────────────────────────────────
+# Activity Data & Emissions
+# ─────────────────────────────────────────
+
+type ActivityData {
+  id: UUID!
+  organizationId: UUID!
+  facilityId: UUID
+  facility: Facility
+  reportingPeriodId: UUID!
+  reportingPeriod: ReportingPeriod!
+  scope: EmissionScope!
+  category: EmissionCategory!
+  subcategory: String
+  measurementApproach: MeasurementApproach!
+  description: String
+  quantity: Decimal!
+  unit: String!
+  startDate: Date!
+  endDate: Date!
+  status: ActivityDataStatus!
+  dataSource: String
+  connectorId: UUID
+  connector: Connector
+  emissionFactor: EmissionFactor
+  calculatedEmissions: Decimal
+  emissionUnit: String
+  notes: String
+  attachments: [Attachment!]!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  createdBy: User
+  validatedBy: User
+  validatedAt: DateTime
+}
+
+type EmissionFactor {
+  id: UUID!
+  name: String!
+  source: EmissionFactorSource!
+  value: Decimal!
+  unit: String!
+  gwpVersion: String
+  region: String
+  year: Int
+  activityType: String
+  description: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type EmissionSummary {
+  id: UUID!
+  organizationId: UUID!
+  organization: Organization!
+  facilityId: UUID
+  facility: Facility
+  reportingPeriodId: UUID!
+  reportingPeriod: ReportingPeriod!
+  scope1Emissions: Decimal!
+  scope2EmissionsMarketBased: Decimal!
+  scope2EmissionsLocationBased: Decimal!
+  scope3Emissions: Decimal!
+  totalEmissions: Decimal!
+  emissionUnit: String!
+  verificationStatus: VerificationStatus!
+  calculatedAt: DateTime!
+  categoryBreakdown: [CategoryEmission!]!
+}
+
+type CategoryEmission {
+  scope: EmissionScope!
+  category: EmissionCategory!
+  emissions: Decimal!
+  unit: String!
+  percentageOfTotal: Decimal!
+  measurementApproach: MeasurementApproach!
+}
+
+type EmissionTarget {
+  id: UUID!
+  organizationId: UUID!
+  organization: Organization!
+  name: String!
+  targetType: BenchmarkType!
+  baselineYear: Int!
+  baselineEmissions: Decimal!
+  targetYear: Int!
+  targetReductionPercentage: Decimal!
+  targetEmissions: Decimal!
+  scope: EmissionScope
+  isSBTiApproved: Boolean!
+  isSBTiValidated: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  progress: [EmissionTargetProgress!]!
+}
+
+type EmissionTargetProgress {
+  year: Int!
+  actualEmissions: Decimal
+  targetEmissions: Decimal!
+  reductionAchieved: Decimal
+  onTrack: Boolean
+}
+
+# ─────────────────────────────────────────
+# PCAF Financed Emissions
+# ─────────────────────────────────────────
+
+type Portfolio {
+  id: UUID!
+  organizationId: UUID!
+  organization: Organization!
+  name: String!
+  description: String
+  reportingYear: Int!
+  totalPortfolioValue: Decimal!
+  currency: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  holdings: [PortfolioHolding!]!
+  financedEmissionsSummary: FinancedEmissionsSummary
+}
+
+type PortfolioHolding {
+  id: UUID!
+  portfolioId: UUID!
+  portfolio: Portfolio!
+  companyName: String!
+  companyId: String
+  isin: String
+  lei: String
+  assetClass: AssetClass!
+  outstandingAmount: Decimal!
+  totalEquityValue: Decimal
+  totalDebtValue: Decimal
+  currency: String!
+  sector: String
+  country: String
+  pcafDataQualityScore: Int
+  reportedEmissions: Decimal
+  estimatedEmissions: Decimal
+  emissionYear: Int
+  attributionFactor: Decimal
+  financedEmissions: Decimal
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type FinancedEmissionsSummary {
+  portfolioId: UUID!
+  totalFinancedEmissions: Decimal!
+  emissionUnit: String!
+  averagePcafScore: Decimal
+  coveragePercentage: Decimal!
+  byAssetClass: [AssetClassEmissions!]!
+  bySector: [SectorEmissions!]!
+}
+
+type AssetClassEmissions {
+  assetClass: AssetClass!
+  financedEmissions: Decimal!
+  portfolioShare: Decimal!
+  averagePcafScore: Decimal
+}
+
+type SectorEmissions {
+  sector: String!
+  financedEmissions: Decimal!
+  portfolioShare: Decimal!
+}
+
+# ─────────────────────────────────────────
+# Disclosure Reports
+# ─────────────────────────────────────────
+
+type DisclosureReport {
+  id: UUID!
+  organizationId: UUID!
+  organization: Organization!
+  reportingPeriodId: UUID!
+  reportingPeriod: ReportingPeriod!
+  framework: DisclosureFramework!
+  title: String!
+  status: DisclosureStatus!
+  version: String!
+  publishedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  sections: [DisclosureSection!]!
+  emissionSummary: EmissionSummary
+  verificationStatement: VerificationStatement
+  approvedBy: User
+}
+
+type DisclosureSection {
+  id: UUID!
+  reportId: UUID!
+  sectionCode: String!
+  title: String!
+  content: String
+  dataPoints: [DisclosureDataPoint!]!
+  completionStatus: Float!
+}
+
+type DisclosureDataPoint {
+  id: UUID!
+  sectionId: UUID!
+  label: String!
+  value: String
+  unit: String
+  dataType: String!
+  required: Boolean!
+  isComplete: Boolean!
+  notes: String
+}
+
+type VerificationStatement {
+  id: UUID!
+  reportId: UUID!
+  verifier: String!
+  verificationStandard: String
+  verificationScope: String
+  status: VerificationStatus!
+  issuedDate: Date
+  validUntilDate: Date
+  statementUrl: String
+}
+
+# ─────────────────────────────────────────
+# Connectors & Integrations
+# ─────────────────────────────────────────
+
+type Connector {
+  id: UUID!
+  organizationId: UUID!
+  organization: Organization!
+  name: String!
+  connectorType: ConnectorType!
+  status: ConnectorStatus!
+  configuration: JSON
+  lastSyncAt: DateTime
+  nextSyncAt: DateTime
+  syncFrequency: String
+  recordsImported: Int
+  errorMessage: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  syncHistory: [ConnectorSyncEvent!]!
+}
+
+type ConnectorSyncEvent {
+  id: UUID!
+  connectorId: UUID!
+  startedAt: DateTime!
+  completedAt: DateTime
+  recordsFetched: Int
+  recordsImported: Int
+  recordsFailed: Int
+  status: String!
+  errorDetails: String
+}
+
+# ─────────────────────────────────────────
+# Benchmarks
+# ─────────────────────────────────────────
+
+type Benchmark {
+  id: UUID!
+  name: String!
+  benchmarkType: BenchmarkType!
+  industry: String
+  sector: String
+  region: String
+  year: Int!
+  emissionsIntensity: Decimal
+  intensityUnit: String
+  totalEmissions: Decimal
+  emissionUnit: String
+  source: String
+  description: String
+  createdAt: DateTime!
+}
+
+type BenchmarkComparison {
+  organizationId: UUID!
+  reportingPeriodId: UUID!
+  organization: Organization!
+  reportingPeriod: ReportingPeriod!
+  organizationEmissions: Decimal!
+  benchmarks: [BenchmarkResult!]!
+}
+
+type BenchmarkResult {
+  benchmark: Benchmark!
+  organizationValue: Decimal!
+  benchmarkValue: Decimal!
+  variance: Decimal!
+  variancePercentage: Decimal!
+  performanceRating: String!
+}
+
+# ─────────────────────────────────────────
+# Attachments & Audit
+# ─────────────────────────────────────────
+
+type Attachment {
+  id: UUID!
+  fileName: String!
+  fileSize: Int!
+  mimeType: String!
+  url: String!
+  uploadedAt: DateTime!
+  uploadedBy: User
+}
+
+type AuditLog {
+  id: UUID!
+  organizationId: UUID!
+  userId: UUID
+  user: User
+  action: String!
+  resourceType: String!
+  resourceId: UUID!
+  previousValue: JSON
+  newValue: JSON
+  ipAddress: String
+  userAgent: String
+  createdAt: DateTime!
+}
+
+# ─────────────────────────────────────────
+# Pagination & Connection Types
+# ─────────────────────────────────────────
+
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+  totalCount: Int!
+}
+
+type ActivityDataConnection {
+  nodes: [ActivityData!]!
+  pageInfo: PageInfo!
+}
+
+type EmissionSummaryConnection {
+  nodes: [EmissionSummary!]!
+  pageInfo: PageInfo!
+}
+
+type DisclosureReportConnection {
+  nodes: [DisclosureReport!]!
+  pageInfo: PageInfo!
+}
+
+type PortfolioConnection {
+  nodes: [Portfolio!]!
+  pageInfo: PageInfo!
+}
+
+type AuditLogConnection {
+  nodes: [AuditLog!]!
+  pageInfo: PageInfo!
+}
+
+# ─────────────────────────────────────────
+# Input Types
+# ─────────────────────────────────────────
+
+input PaginationInput {
+  first: Int
+  after: String
+  last: Int
+  before: String
+}
+
+input DateRangeInput {
+  startDate: Date!
+  endDate: Date!
+}
+
+input ActivityDataFilterInput {
+  organizationId: UUID
+  facilityId: UUID
+  reportingPeriodId: UUID
+  scope: EmissionScope
+  category: EmissionCategory
+  status: ActivityDataStatus
+  measurementApproach: MeasurementApproach
+  dateRange: DateRangeInput
+  connectorId: UUID
+}
+
+input ActivityDataSortInput {
+  field: ActivityDataSortField!
+  order: SortOrder!
+}
+
+enum ActivityDataSortField {
+  CREATED_AT
+  UPDATED_AT
+  START_DATE
+  QUANTITY
+  CALCULATED_EMISSIONS
+}
+
+input CreateActivityDataInput {
+  facilityId: UUID
+  reportingPeriodId: UUID!
+  scope: EmissionScope!
+  category: EmissionCategory!
+  subcategory: String
+  measurementApproach: MeasurementApproach!
+  description: String
+  quantity: Decimal!
+  unit: String!
+  startDate: Date!
+  endDate: Date!
+  dataSource: String
+  emissionFactorId: UUID
+  notes: String
+}
+
+input UpdateActivityDataInput {
+  facilityId: UUID
+  scope: EmissionScope
+  category: EmissionCategory
+  subcategory: String
+  measurementApproach: MeasurementApproach
+  description: String
+  quantity: Decimal
+  unit: String
+  startDate: Date
+  endDate: Date
+  dataSource: String
+  emissionFactorId: UUID
+  notes: String
+  status: ActivityDataStatus
+}
+
+input CreatePortfolioInput {
+  name: String!
+  description: String
+  reportingYear: Int!
+  totalPortfolioValue: Decimal!
+  currency: String!
+}
+
+input CreatePortfolioHoldingInput {
+  portfolioId: UUID!
+  companyName: String!
+  companyId: String
+  isin: String
+  lei: String
+  assetClass: AssetClass!
+  outstandingAmount: Decimal!
+  totalEquityValue: Decimal
+  totalDebtValue: Decimal
+  currency: String!
+  sector: String
+  country: String
+  reportedEmissions: Decimal
+  estimatedEmissions: Decimal
+  emissionYear: Int
+}
+
+input UpdatePortfolioHoldingInput {
+  companyName: String
+  outstandingAmount: Decimal
+  totalEquityValue: Decimal
+  totalDebtValue: Decimal
+  reportedEmissions: Decimal
+  estimatedEmissions: Decimal
+  emissionYear: Int
+  pcafDataQualityScore: Int
+}
+
+input CreateDisclosureReportInput {
+  reportingPeriodId: UUID!
+  framework: DisclosureFramework!
+  title: String!
+}
+
+input UpdateDisclosureReportInput {
+  title: String
+  status: DisclosureStatus
+  version: String
+}
+
+input CreateFacilityInput {
+  name: String!
+  facilityType: String
+  address: AddressInput
+  country: String!
+  region: String
+  latitude: Decimal
+  longitude: Decimal
+  operationalStatus: String
+  squareFootage: Decimal
+}
+
+input AddressInput {
+  street1: String
+  street2: String
+  city: String
+  state: String
+  postalCode: String
+  country: String!
+}
+
+input CreateReportingPeriodInput {
+  name: String!
+  periodType: ReportingPeriodType!
+  startDate: Date!
+  endDate: Date!
+  baselineYear: Boolean
+}
+
+input CreateConnectorInput {
+  name: String!
+  connectorType: ConnectorType!
+  configuration: JSON
+  syncFrequency: String
+}
+
+input EmissionTargetInput {
+  name: String!
+  targetType: BenchmarkType!
+  baselineYear: Int!
+  baselineEmissions: Decimal!
+  targetYear: Int!
+  targetReductionPercentage: Decimal!
+  scope: EmissionScope
+}
+
+input BenchmarkComparisonInput {
+  reportingPeriodId: UUID!
+  benchmarkIds: [UUID!]!
+}
+
+# ─────────────────────────────────────────
+# Query Root
+# ─────────────────────────────────────────
+
+type Query {
+  # Organization
+  organization(id: UUID!): Organization
+  organizations(pagination: PaginationInput): [Organization!]!
+
+  # Facilities
+  facility(id: UUID!): Facility
+  facilities(organizationId: UUID!, pagination: PaginationInput): [Facility!]!
+
+  # Reporting Periods
+  reportingPeriod(id: UUID!): ReportingPeriod
+  reportingPeriods(organizationId: UUID!, pagination: PaginationInput): [ReportingPeriod!]!
+
+  # Activity Data
+  activityData(id: UUID!): ActivityData
+  activityDataList(
+    filter: ActivityDataFilterInput
+    sort: ActivityDataSortInput
+    pagination: PaginationInput
+  ): ActivityDataConnection!
+
+  # Emission Factors
+  emissionFactor(id: UUID!): EmissionFactor
+  emissionFactors(
+    source: EmissionFactorSource
+    region: String
+    year: Int
+    activityType: String
+    pagination: PaginationInput
+  ): [EmissionFactor!]!
+
+  # Emission Summaries
+  emissionSummary(id: UUID!): EmissionSummary
+  emissionSummaries(
+    organizationId: UUID!
+    reportingPeriodId: UUID
+    pagination: PaginationInput
+  ): EmissionSummaryConnection!
+
+  # Emission Targets
+  emissionTarget(id: UUID!): EmissionTarget
+  emissionTargets(organizationId: UUID!): [EmissionTarget!]!
+
+  # PCAF / Portfolios
+  portfolio(id: UUID!): Portfolio
+  portfolios(organizationId: UUID!, pagination: PaginationInput): PortfolioConnection!
+  portfolioHolding(id: UUID!): PortfolioHolding
+  portfolioHoldings(portfolioId: UUID!, pagination: PaginationInput): [PortfolioHolding!]!
+  financedEmissionsSummary(portfolioId: UUID!): FinancedEmissionsSummary
+
+  # Disclosure Reports
+  disclosureReport(id: UUID!): DisclosureReport
+  disclosureReports(
+    organizationId: UUID!
+    framework: DisclosureFramework
+    status: DisclosureStatus
+    pagination: PaginationInput
+  ): DisclosureReportConnection!
+
+  # Connectors
+  connector(id: UUID!): Connector
+  connectors(organizationId: UUID!, connectorType: ConnectorType): [Connector!]!
+  connectorSyncHistory(connectorId: UUID!, pagination: PaginationInput): [ConnectorSyncEvent!]!
+
+  # Benchmarks
+  benchmark(id: UUID!): Benchmark
+  benchmarks(
+    benchmarkType: BenchmarkType
+    industry: String
+    sector: String
+    year: Int
+  ): [Benchmark!]!
+  benchmarkComparison(input: BenchmarkComparisonInput!): BenchmarkComparison!
+
+  # Users
+  user(id: UUID!): User
+  users(organizationId: UUID!, role: UserRole): [User!]!
+  me: User
+
+  # Audit
+  auditLog(id: UUID!): AuditLog
+  auditLogs(
+    organizationId: UUID!
+    resourceType: String
+    resourceId: UUID
+    userId: UUID
+    dateRange: DateRangeInput
+    pagination: PaginationInput
+  ): AuditLogConnection!
+}
+
+# ─────────────────────────────────────────
+# Mutation Root
+# ─────────────────────────────────────────
+
+type Mutation {
+  # Activity Data
+  createActivityData(input: CreateActivityDataInput!): ActivityData!
+  updateActivityData(id: UUID!, input: UpdateActivityDataInput!): ActivityData!
+  deleteActivityData(id: UUID!): Boolean!
+  submitActivityData(id: UUID!): ActivityData!
+  validateActivityData(id: UUID!): ActivityData!
+  rejectActivityData(id: UUID!, reason: String!): ActivityData!
+  bulkImportActivityData(reportingPeriodId: UUID!, data: [CreateActivityDataInput!]!): [ActivityData!]!
+
+  # Facilities
+  createFacility(organizationId: UUID!, input: CreateFacilityInput!): Facility!
+  updateFacility(id: UUID!, input: CreateFacilityInput!): Facility!
+  deleteFacility(id: UUID!): Boolean!
+
+  # Reporting Periods
+  createReportingPeriod(organizationId: UUID!, input: CreateReportingPeriodInput!): ReportingPeriod!
+  updateReportingPeriod(id: UUID!, input: CreateReportingPeriodInput!): ReportingPeriod!
+
+  # Emission Calculations
+  calculateEmissions(reportingPeriodId: UUID!, organizationId: UUID!): EmissionSummary!
+  recalculateEmissions(emissionSummaryId: UUID!): EmissionSummary!
+
+  # Emission Targets
+  createEmissionTarget(organizationId: UUID!, input: EmissionTargetInput!): EmissionTarget!
+  updateEmissionTarget(id: UUID!, input: EmissionTargetInput!): EmissionTarget!
+  deleteEmissionTarget(id: UUID!): Boolean!
+
+  # PCAF / Portfolios
+  createPortfolio(organizationId: UUID!, input: CreatePortfolioInput!): Portfolio!
+  updatePortfolio(id: UUID!, input: CreatePortfolioInput!): Portfolio!
+  deletePortfolio(id: UUID!): Boolean!
+  createPortfolioHolding(input: CreatePortfolioHoldingInput!): PortfolioHolding!
+  updatePortfolioHolding(id: UUID!, input: UpdatePortfolioHoldingInput!): PortfolioHolding!
+  deletePortfolioHolding(id: UUID!): Boolean!
+  calculateFinancedEmissions(portfolioId: UUID!): FinancedEmissionsSummary!
+
+  # Disclosure Reports
+  createDisclosureReport(organizationId: UUID!, input: CreateDisclosureReportInput!): DisclosureReport!
+  updateDisclosureReport(id: UUID!, input: UpdateDisclosureReportInput!): DisclosureReport!
+  submitDisclosureReport(id: UUID!): DisclosureReport!
+  approveDisclosureReport(id: UUID!): DisclosureReport!
+  publishDisclosureReport(id: UUID!): DisclosureReport!
+
+  # Connectors
+  createConnector(organizationId: UUID!, input: CreateConnectorInput!): Connector!
+  updateConnector(id: UUID!, input: CreateConnectorInput!): Connector!
+  deleteConnector(id: UUID!): Boolean!
+  triggerConnectorSync(id: UUID!): ConnectorSyncEvent!
+  pauseConnector(id: UUID!): Connector!
+  resumeConnector(id: UUID!): Connector!
+
+  # Attachments
+  deleteAttachment(id: UUID!): Boolean!
+}
