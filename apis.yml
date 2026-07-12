@@ -133,6 +133,10 @@ apis:
     description: API and integration access provisioned through customer onboarding
       and partner programs.
 common:
+- type: TrustCenter
+  url: security/persefoni-trust-center.yml
+- type: DomainSecurity
+  url: security/persefoni-domain-security.yml
 - type: Website
   url: https://www.persefoni.com/
 - type: Platform
@@ -153,6 +157,8 @@ common:
   url: https://www.persefoni.com/contact-us
 - type: LinkedIn
   url: https://www.linkedin.com/company/persefoni-ai/
+- type: Blog
+  url: https://www.persefoni.com/blog/rss.xml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
