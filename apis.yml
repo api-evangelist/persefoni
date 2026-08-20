@@ -74,6 +74,14 @@ apis:
     '
   humanURL: https://www.persefoni.com/product/integration-hub
   tags:
+  - Integration
+  - Connectors
+  - ERP
+  - Travel
+  - Utilities
+  - Cloud Emissions
+  - Enterprise API
+  tags_raw:
   - Integrations
   - Connectors
   - ERP
