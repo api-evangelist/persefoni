@@ -113,8 +113,6 @@ apis:
     url: https://aws.amazon.com/marketplace/pp/prodview-xjkwazkrg2b62
   - type: Security
     url: https://www.persefoni.com/documents/security
-  - url: graphql/persefoni-graphql.md
-    type: GraphQL
   features:
   - name: AWS Cloud Footprint
     description: Automated collection of cloud computing footprint data from AWS cost
