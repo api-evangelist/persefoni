@@ -162,6 +162,12 @@ apis:
     description: API and integration access provisioned through customer onboarding
       and partner programs.
 common:
+- type: Plans
+  url: plans/persefoni-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/persefoni-rate-limits.yml
+- type: FinOps
+  url: finops/persefoni-finops.yml
 - type: TrustCenter
   url: security/persefoni-trust-center.yml
 - type: DomainSecurity
